@@ -32,15 +32,24 @@ export default function App() {
   }, [search]);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/companies?limit=1000").then((r) => r.json()),
-      fetch("/api/filters").then((r) => r.json()),
-      fetch("/api/stats").then((r) => r.json()),
-    ])
-      .then(([data, filtersData, statsData]) => {
-        setAllCompanies(data.companies || []);
-        setFilters(filtersData);
-        setStats(statsData);
+    fetch(`${import.meta.env.BASE_URL}companies.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        const companies = data.companies || [];
+        setAllCompanies(companies);
+        setFilters({
+          states: [...new Set(companies.flatMap((c) => c.states))].sort(),
+          plan_types: [...new Set(companies.flatMap((c) => c.plan_types))].sort(),
+        });
+        setStats({
+          total_companies: data.total_companies,
+          total_contracts: data.total_contracts,
+          data_period: data.data_period,
+          data_loaded: companies.length > 0,
+        });
         setLoading(false);
       })
       .catch((err) => {
@@ -153,9 +162,9 @@ export default function App() {
 
         {error && (
           <div className="state-box">
-            <h3>Cannot reach the API</h3>
-            <p>Make sure the FastAPI backend is running on port 8000.</p>
-            <code>cd backend && uvicorn main:app --reload</code>
+            <h3>Could not load data</h3>
+            <p>Run the data fetcher to generate the index, then refresh.</p>
+            <code>python backend/data_fetcher.py</code>
           </div>
         )}
 

@@ -207,13 +207,18 @@ def build_company_index(contracts: dict, state_map: dict) -> list:
         key = contract["parent_org"]
         by_parent.setdefault(key, []).append(contract)
 
+    seen_slugs: dict[str, int] = {}
     companies = []
     for parent_org, org_contracts in by_parent.items():
         all_states = sorted({s for c in org_contracts for s in c["states"]})
         plan_types = sorted({c["plan_type"] for c in org_contracts if c["plan_type"]})
         total_enrollment = sum(c["enrollment"] for c in org_contracts)
+        base_slug = slugify(parent_org)
+        count = seen_slugs.get(base_slug, 0)
+        seen_slugs[base_slug] = count + 1
+        unique_id = base_slug if count == 0 else f"{base_slug}-{count}"
         companies.append({
-            "id": slugify(parent_org),
+            "id": unique_id,
             "parent_org": parent_org,
             "contracts": sorted(org_contracts, key=lambda c: c["contract_id"]),
             "states": all_states,
