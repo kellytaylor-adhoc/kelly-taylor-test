@@ -1,0 +1,10 @@
+backend/data/*.json
+backend/venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.env
+.DS_Store
+.claude/settings.local.json
+.claude/worktrees/
