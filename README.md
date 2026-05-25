@@ -86,3 +86,36 @@ npm run dev
 | GET | `/api/companies/{id}` | Single organization with all contracts |
 | GET | `/api/filters` | Available states, plan types, and org types for filter dropdowns |
 | GET | `/api/stats` | Total counts and data currency |
+
+## AI-Assisted Development
+
+This project uses [Ad Hoc's Activate AI](https://github.com/adhocteam/activate) to provide consistent AI guidance across tools (GitHub Copilot, Claude, Cursor, etc.).
+
+### What's included
+
+| Path | Purpose |
+|---|---|
+| `AGENTS.md` | Project-wide instructions — always active |
+| `.github/instructions/general.instructions.md` | Commit conventions, code quality standards |
+| `.github/instructions/python.instructions.md` | Backend patterns, FastAPI conventions, data fetcher guidance |
+| `.github/instructions/typescript.instructions.md` | Frontend patterns, React/JSX conventions |
+| `.github/instructions/security.instructions.md` | Security review checklist |
+| `.github/prompts/` | 18 reusable prompts (code review, PR prep, ADRs, accessibility, etc.) |
+| `.github/agents/` | Specialized agents (docs, service designer, AI workflow, Terraform) |
+| `.github/skills/` | Multi-step workflows (documentation, test runner, PR prep, user stories) |
+
+### Using prompts in VS Code
+
+In GitHub Copilot Chat, type `/` followed by a prompt name:
+
+```
+/code-review          # Security and correctness review
+/prepare-pull-request # Draft a PR description
+/generate-tests       # Write tests for the current file
+/create-adr           # Document an architecture decision
+/accessibility-check  # WCAG audit of a UI component
+```
+
+### Customizing
+
+See [`CUSTOMIZATION.md`](CUSTOMIZATION.md) for guidance on adding new instructions, prompts, or skills tailored to this project.

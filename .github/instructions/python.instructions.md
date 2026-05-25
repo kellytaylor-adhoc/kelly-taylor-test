@@ -5,98 +5,67 @@ excludeAgent: []
 ---
 # Python Instructions
 
-Project-specific Python guidance. Only include what Copilot cannot infer from public documentation.
-
-> **Note:** Do not restate PEP 8, standard library usage, or common patterns. Focus on your team's specific choices and constraints.
+Project-specific Python guidance for the Medicare Advantage Index backend.
 
 ## Version and Runtime
 
-<!-- CUSTOMIZE: Specify your Python version and any runtime constraints -->
-
-- **Python version**: <!-- e.g., 3.11+, 3.12 required -->
-- **Package manager**: <!-- e.g., Poetry, pip, uv -->
-- **Virtual environment**: <!-- e.g., venv, conda, pyenv -->
+- **Python version**: 3.12+
+- **Package manager**: pip
+- **Virtual environment**: `venv` — always at `backend/venv/`; activate with `source backend/venv/bin/activate`
 
 ## Tooling
 
-<!-- CUSTOMIZE: List your specific tools and how to run them -->
-
 | Tool | Command | Purpose |
 |------|---------|---------|
-| Formatter | <!-- e.g., `ruff format` --> | <!-- e.g., Code formatting --> |
-| Linter | <!-- e.g., `ruff check` --> | <!-- e.g., Style and error checking --> |
-| Type checker | <!-- e.g., `mypy .` --> | <!-- e.g., Static type analysis --> |
-| Tests | <!-- e.g., `pytest` --> | <!-- e.g., Run test suite --> |
+| Run server | `venv/bin/uvicorn main:app --reload` | Start FastAPI dev server on port 8000 |
+| Fetch data | `venv/bin/python data_fetcher.py` | Download and rebuild CMS data |
+| Install deps | `venv/bin/pip install -r requirements.txt` | Install/update dependencies |
+
+No linter or formatter is currently configured. When adding one, prefer `ruff` (covers both formatting and linting).
 
 ## Project Structure
 
-<!-- CUSTOMIZE: Document your specific directory layout if it differs from conventions -->
-
 ```text
-<!-- e.g.,
-src/
-├── api/           # FastAPI routes
-├── services/      # Business logic
-├── models/        # Pydantic models
-└── repositories/  # Data access
--->
+backend/
+├── main.py           # FastAPI app — API routes only, no business logic
+├── data_fetcher.py   # Standalone script: downloads CMS ZIPs, produces data/companies.json
+├── requirements.txt  # Pinned dependencies
+└── data/
+    └── companies.json  # Generated output — gitignored, never edit by hand
 ```
-
-## Internal Libraries
-
-<!-- CUSTOMIZE: List internal packages and their intended usage -->
-
-<!-- e.g.,
-- `adhoc-auth`: Use for all authentication; do not implement JWT handling directly
-- `adhoc-logging`: Structured logging with correlation IDs; replaces stdlib logging
--->
 
 ## Team Conventions
 
-<!-- CUSTOMIZE: Document decisions where multiple valid approaches exist -->
-
 ### Preferred Patterns
 
-<!-- e.g.,
-- Use `pathlib.Path` over `os.path` for file operations
-- Use `httpx` over `requests` for HTTP clients (async support)
-- Use Pydantic for data validation, not dataclasses
--->
+- Use `pathlib.Path` over `os.path` for all file operations
+- Use `requests` for HTTP (already a dependency); do not add `httpx` without discussion
+- Use `io.BytesIO` + `zipfile.ZipFile` for in-memory ZIP handling (established pattern in `data_fetcher.py`)
+- Use `csv.DictReader` for CSV parsing — never parse CSV by splitting strings
+- Use `X | None` union syntax (Python 3.10+) instead of `Optional[X]`
 
 ### Patterns to Avoid
 
-<!-- e.g.,
-- Do not use `eval()` or `exec()` under any circumstances
-- Avoid bare `except:` clauses; always specify exception types
-- Do not use mutable default arguments
--->
+- Do not use `eval()` or `exec()`
+- Avoid bare `except:` — always specify exception types (e.g., `except requests.RequestException`)
+- Do not edit `data/companies.json` by hand — it is a generated artifact; modify `data_fetcher.py` instead
+- Do not add new top-level scripts; extend `data_fetcher.py` or `main.py` as appropriate
 
-## Type Hints
+## FastAPI Conventions
 
-<!-- CUSTOMIZE: Specify your type hint expectations -->
+- All routes live in `main.py`; keep route handlers thin
+- Use `Query(default=..., le=...)` for validated query parameters
+- Raise `HTTPException` with meaningful status codes for errors
+- CORS is locked to `localhost:5173` and `localhost:4173` — do not broaden without review
 
-<!-- e.g.,
-- All public functions must have complete type annotations
-- Use `from __future__ import annotations` for forward references
-- Prefer `X | None` over `Optional[X]` (Python 3.10+ syntax)
--->
+## Data Fetcher Conventions
 
-## Testing Conventions
-
-<!-- CUSTOMIZE: Document your testing patterns -->
-
-<!-- e.g.,
-- Use pytest fixtures for database setup; see `conftest.py`
-- Name test files `test_*.py`; name test functions `test_<behavior>_<condition>`
-- Use `pytest-asyncio` for async tests with `@pytest.mark.asyncio`
--->
+- The fetcher is a standalone CLI script (`if __name__ == "__main__"`)
+- It tries the last 6 months of CMS data in descending order and uses the first that returns HTTP 200
+- After regenerating `data/companies.json`, also copy it to `../frontend/public/companies.json` for the static build
 
 ## Dependencies
 
-<!-- CUSTOMIZE: Note any specific dependency decisions -->
-
-<!-- e.g.,
-- Pin all dependencies in `pyproject.toml`
-- Run `pip-audit` before adding new packages
-- Prefer stdlib solutions over adding new dependencies
--->
+- Pin all dependencies in `requirements.txt` with exact versions
+- Current dependencies: `fastapi`, `uvicorn[standard]`, `requests`
+- Prefer stdlib solutions over adding new packages

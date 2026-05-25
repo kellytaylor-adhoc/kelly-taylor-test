@@ -126,11 +126,48 @@ This ensures the repository continuously evolves based on real usage.
 
 ## Getting Started
 
-<!-- Add project-specific setup instructions here -->
+### Prerequisites
 
-1. Clone the repository
-2. Install dependencies
-3. Review the instruction files in `.github/instructions/`
+- Python 3.12+
+- Node 20 LTS
+- npm
+
+### Backend setup
+
+```bash
+cd backend
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+venv/bin/python data_fetcher.py   # downloads ~50 MB from CMS.gov — required before first run
+venv/bin/uvicorn main:app --reload
+```
+
+### Frontend setup
+
+```bash
+cd frontend
+npm install
+npm run dev   # → http://localhost:5173
+```
+
+### Deploy to GitHub Pages
+
+```bash
+cd frontend
+npm run deploy   # copies data, builds, and pushes to gh-pages branch
+```
+
+Live site: https://kellytaylor-adhoc.github.io/kelly-taylor-test/
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `backend/data_fetcher.py` | Downloads CMS data and produces `data/companies.json` |
+| `backend/main.py` | FastAPI server (local dev only) |
+| `frontend/src/App.jsx` | All state, filtering, and sorting logic |
+| `frontend/src/components/CompanyDetail.jsx` | Detail panel |
+| `frontend/public/companies.json` | Generated data served to the browser (gitignored) |
 
 ## Error Recovery
 
