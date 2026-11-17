@@ -2,6 +2,8 @@
 
 A searchable web index of all Medicare Advantage health insurance organizations in the United States, built on public CMS data.
 
+**Live site:** https://kellytaylor-adhoc.github.io/kelly-taylor-test/
+
 ![React](https://img.shields.io/badge/React-18-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green) ![Data](https://img.shields.io/badge/Data-CMS.gov-lightblue)
 
 ## Features
@@ -71,12 +73,34 @@ venv/bin/uvicorn main:app --reload
 
 ### 4. Frontend
 
+The frontend uses the generated JSON as a static file. Copy it into the frontend
+before starting the development server:
+
 ```bash
 cd frontend
+mkdir -p public
+cp ../backend/data/companies.json public/companies.json
 npm install
 npm run dev
 # → http://localhost:5173
 ```
+
+The API server is optional for normal frontend use; the React app reads
+`public/companies.json` directly. The API endpoints remain available for local
+development or integrations.
+
+## Deploy
+
+From the repository root:
+
+```bash
+cd frontend
+npm install
+npm run deploy
+```
+
+The deployment script copies the generated CMS data into `public/`, builds the
+Vite app, and publishes the `dist` directory to GitHub Pages.
 
 ## API Endpoints
 
