@@ -12,6 +12,7 @@ Add and improve the project README.
 
 - Updated the README with the live site URL and deployment instructions.
 - Corrected the local setup steps to copy generated CMS data into the frontend's static data directory.
+- Committed the documentation update as `af49e82`.
 
 ## Decisions Made
 
